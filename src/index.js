@@ -1,12 +1,21 @@
 /* eslint-disable prettier/prettier */
 import React, {useState, useEffect} from 'react';
-import {View, Text, PermissionsAndroid, StyleSheet, Image} from 'react-native';
+import {PermissionsAndroid, SafeAreaView, ScrollView} from 'react-native';
 import Geolocation from 'react-native-geolocation-service';
-import MapView, { Marker } from 'react-native-maps';
+
+import Map from './components/Map';
+import ConsolidatedWeather from './components/ConsolidatedWeather';
+import Header from './components/Header';
+import ScaleConversion from './components/ScaleConversion';
 
 import { metaWeatherApi } from './services/api';
 
+
+
 export default function App() {
+  const [todayTemp, setTodayTemp] = useState([]);
+  const [consolidatedWeather, setConsolidatedWeather] = useState([]);
+  const [scaleType, setScaleType] = useState('C');
   const [userLocationWoeId, setUserLocationWoeId] = useState(0);
   const [userLocation, setUserLocation] = useState([]);
   const [userPosition, setUserPosition] = useState({
@@ -52,9 +61,14 @@ export default function App() {
   useEffect(() => {
     async function getUserLocationInfo() {
         if (userLocationWoeId !== 0) {
-            const location = await metaWeatherApi.get(`location/${userLocationWoeId}`);
-            console.log(location.data);
-            setUserLocation(location.data);
+            const response = await metaWeatherApi.get(
+                `location/${userLocationWoeId}`,
+              );
+            const location = response.data;
+            const consolidated_weather = location.consolidated_weather;
+            setTodayTemp(consolidated_weather[0]);
+            setConsolidatedWeather(consolidated_weather);
+            setUserLocation(location);
         }
     }
     getUserLocationInfo();
@@ -63,51 +77,22 @@ export default function App() {
 
 
   return (
-    <View>
-      <View>
-        <Text>{userLocation.title}</Text>
-        <Text>{userLocation.consolidated_weather.shift().the_temp}</Text>
-      </View>
-      <View>
-        <MapView region={userPosition} style={styles.mapView}>
-          <Marker
-            coordinate={{
-              latitude: userPosition.latitude,
-              longitude: userPosition.longitude,
-            }}>
-            <View style={{backgroundColor: 'red', padding: 10}}>
-              <Text>Usuário</Text>
-            </View>
-          </Marker>
-        </MapView>
-      </View>
-      <View>
-        {userLocation.consolidated_weather !== undefined &&
-          userLocation.consolidated_weather.map(weather => (
-            <View>
-              <Text>{weather.applicable_date}</Text>
-              <Text>{weather.the_temp}</Text>
-              <Image
-                style={styles.weatherIcon}
-                source={{
-                  uri: `https://www.metaweather.com/static/img/weather/png/64/${weather.weather_state_abbr}.png`,
-                }}
-              />
-            </View>
-          ))}
-      </View>
-    </View>
+    <SafeAreaView>
+      <ScrollView>
+        <Header city={userLocation.title} temp={todayTemp} />
+        <Map region={userPosition} />
+        <ConsolidatedWeather consolidatedWeathers={consolidatedWeather} />
+        <ScaleConversion
+          consolidatedWeather={consolidatedWeather}
+          scaleType={scaleType}
+          onConvert={(response) => {
+            const {scale, convertedWeather} = response;
+            setTodayTemp(convertedWeather[0]);
+            setConsolidatedWeather(convertedWeather);
+            setScaleType(scale);
+          }}
+        />
+      </ScrollView>
+    </SafeAreaView>
   );
 }
-
-
-const styles = StyleSheet.create({
-  mapView: {
-    width: 400,
-    height: 400,
-  },
-  weatherIcon: {
-    width: 64,
-    height: 64,
-  }
-});
