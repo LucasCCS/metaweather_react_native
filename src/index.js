@@ -61,34 +61,35 @@ export default function App() {
   useEffect(() => {
     async function getUserLocationInfo() {
         if (userLocationWoeId !== 0) {
-            const response = await metaWeatherApi.get(
-                `location/${userLocationWoeId}`,
-              );
-            const location = response.data;
-            const consolidated_weather = location.consolidated_weather;
-            setTodayTemp(consolidated_weather[0]);
-            setConsolidatedWeather(consolidated_weather);
-            setUserLocation(location);
+          const response = await metaWeatherApi.get(
+              `location/${userLocationWoeId}`,
+            );
+          const location = response.data;
+          handlerUpdateAppInfo(location.consolidated_weather);
+          setUserLocation(location);
         }
     }
     getUserLocationInfo();
   }, [userLocationWoeId]);
 
-
+  function handlerUpdateAppInfo(consolidated_weather) {
+    setTodayTemp(consolidated_weather[0]);
+    setConsolidatedWeather(consolidated_weather);
+  }
 
   return (
-    <SafeAreaView>
+    <SafeAreaView style={{padding: 10}}>
       <ScrollView>
-        <Header city={userLocation.title} temp={todayTemp} />
+        <Header city={userLocation.title} temp={todayTemp} scale={scaleType} />
         <Map region={userPosition} />
-        <ConsolidatedWeather consolidatedWeathers={consolidatedWeather} />
+        <ConsolidatedWeather consolidatedWeathers={consolidatedWeather} scale={scaleType} />
         <ScaleConversion
           consolidatedWeather={consolidatedWeather}
           scaleType={scaleType}
           onConvert={(response) => {
             const {scale, convertedWeather} = response;
             setTodayTemp(convertedWeather[0]);
-            setConsolidatedWeather(convertedWeather);
+            handlerUpdateAppInfo(convertedWeather);
             setScaleType(scale);
           }}
         />

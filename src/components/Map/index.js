@@ -1,7 +1,8 @@
 import React from 'react';
-import {View, Text} from 'react-native';
+import {View, Image} from 'react-native';
 import MapView, {Marker} from 'react-native-maps';
 import styles from './styles';
+import mapIcon from '../../assets/images/map_marker.png';
 export default function Map({region}) {
   return (
     <View>
@@ -11,9 +12,7 @@ export default function Map({region}) {
             latitude: region.latitude,
             longitude: region.longitude,
           }}>
-          <View style={{backgroundColor: 'red', padding: 10}}>
-            <Text>Usuário</Text>
-          </View>
+          <Image style={styles.mapViewIcon} source={mapIcon} />
         </Marker>
       </MapView>
     </View>
