@@ -6,6 +6,7 @@ export default StyleSheet.create({
     height: 20,
   },
   consolidatedWeathersList: {
+    backgroundColor: '#fff',
     borderWidth: 1,
     borderColor: '#d6d7da',
     padding: 10,

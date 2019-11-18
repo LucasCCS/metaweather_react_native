@@ -1,8 +1,12 @@
 /* eslint-disable prettier/prettier */
 import React, {useState, useEffect} from 'react';
-import {PermissionsAndroid, SafeAreaView, ScrollView} from 'react-native';
-import Geolocation from 'react-native-geolocation-service';
-
+import {
+  PermissionsAndroid,
+  SafeAreaView,
+  ScrollView,
+} from 'react-native';
+import Geolocation from '@react-native-community/geolocation';
+import LoadScreen from './components/LoadScreen';
 import Map from './components/Map';
 import ConsolidatedWeather from './components/ConsolidatedWeather';
 import Header from './components/Header';
@@ -13,6 +17,7 @@ import { metaWeatherApi } from './services/api';
 
 
 export default function App() {
+  const [loadState, setLoadState] = useState(true);
   const [todayTemp, setTodayTemp] = useState([]);
   const [consolidatedWeather, setConsolidatedWeather] = useState([]);
   const [scaleType, setScaleType] = useState('C');
@@ -33,8 +38,8 @@ export default function App() {
           PermissionsAndroid.PERMISSIONS.ACCESS_COARSE_LOCATION,
         );
         if (granted === PermissionsAndroid.RESULTS.GRANTED) {
-          Geolocation.getCurrentPosition(position => {
-            const {latitude, longitude} = position.coords;
+          Geolocation.getCurrentPosition(info => {
+            const {latitude, longitude} = info.coords;
             setUserPosition({
               latitude,
               longitude,
@@ -44,9 +49,10 @@ export default function App() {
             metaWeatherApi
               .get(`location/search/?lattlong=${latitude},${longitude}`)
               .then(location => {
-                const { woeid } = location.data.shift();
+                const {woeid} = location.data.shift();
                 setUserLocationWoeId(woeid);
-              });
+              })
+              .catch(error => console.warn(error));
           });
 
         }
@@ -67,6 +73,7 @@ export default function App() {
           const location = response.data;
           handlerUpdateAppInfo(location.consolidated_weather);
           setUserLocation(location);
+          setLoadState(false);
         }
     }
     getUserLocationInfo();
@@ -76,17 +83,24 @@ export default function App() {
     setTodayTemp(consolidated_weather[0]);
     setConsolidatedWeather(consolidated_weather);
   }
+  if (loadState) {
+    return <LoadScreen />;
+  }
 
   return (
-    <SafeAreaView style={{padding: 10}}>
+    // eslint-disable-next-line react-native/no-inline-styles
+    <SafeAreaView style={{padding: 10, flex: 1, backgroundColor: '#fff'}}>
       <ScrollView>
         <Header city={userLocation.title} temp={todayTemp} scale={scaleType} />
         <Map region={userPosition} />
-        <ConsolidatedWeather consolidatedWeathers={consolidatedWeather} scale={scaleType} />
+        <ConsolidatedWeather
+          consolidatedWeathers={consolidatedWeather}
+          scale={scaleType}
+        />
         <ScaleConversion
           consolidatedWeather={consolidatedWeather}
           scaleType={scaleType}
-          onConvert={(response) => {
+          onConvert={response => {
             const {scale, convertedWeather} = response;
             setTodayTemp(convertedWeather[0]);
             handlerUpdateAppInfo(convertedWeather);
