@@ -89,7 +89,7 @@ export default function App() {
 
   return (
     // eslint-disable-next-line react-native/no-inline-styles
-    <SafeAreaView style={{padding: 10, flex: 1, backgroundColor: '#fff'}}>
+    <SafeAreaView style={{padding: 10, flex: 1, flexDirection: 'row', alignItems: 'center', backgroundColor: '#fff'}}>
       <ScrollView>
         <Header city={userLocation.title} temp={todayTemp} scale={scaleType} />
         <Map region={userPosition} />

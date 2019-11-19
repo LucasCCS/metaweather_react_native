@@ -7,7 +7,7 @@ export default function ConsolidatedWeather({consolidatedWeathers, scale}) {
   return (
     <View style={styles.consolidatedWeathersList}>
       {consolidatedWeathers !== undefined &&
-        consolidatedWeathers.map((weather, i) => (
+        consolidatedWeathers.slice(1).map((weather, i) => (
           <View
             key={weather.id}
             style={

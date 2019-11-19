@@ -38,12 +38,16 @@ export default function ScaleConversion({
 
   return (
     <View style={styles.ScaleConversionBox}>
-      <Text>Celsius / Fahrenheit</Text>
-      <Switch value={switchStatus} onValueChange={() => {
-        let state = !switchStatus;
-        setSwitchStatus(state);
-        handlerConvert(state);
-      }} />
+      <Text style={styles.ScaleConversionText}>Celsius / Fahrenheit</Text>
+      <Switch
+        value={switchStatus}
+        onValueChange={() => {
+          let state = !switchStatus;
+          setSwitchStatus(state);
+          handlerConvert(state);
+        }}
+        style={styles.ScaleConversionSwitch}
+      />
     </View>
   );
 }
